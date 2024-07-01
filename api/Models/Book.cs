@@ -14,7 +14,7 @@ namespace api.Models
         public string Description { get; set; } = string.Empty;
         public string CoverImage { get; set; } = string.Empty;
         public string Publisher { get; set; } = string.Empty;
-        public string PublicationDate { get; set; } = string.Empty;
+        public DateTime PublicationDate { get; set; }
         public string Category { get; set; } = string.Empty;
         public int PageCount { get; set; }
     }
