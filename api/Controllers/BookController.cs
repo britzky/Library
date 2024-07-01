@@ -75,5 +75,21 @@ namespace api.Controllers
 
             return Ok(featuredBooks);
         }
+
+        [HttpGet("search")]
+        public IActionResult SearchBooks([FromQuery] string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return BadRequest("Search term is required");
+            }
+
+            var books = _context.Books
+                .Where(b => b.Title.Contains(searchTerm))
+                .Select(b => b.ToFeaturedBookDto())
+                .ToList();
+
+            return Ok(books);
+        }
     }
 }
