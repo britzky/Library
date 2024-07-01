@@ -17,5 +17,6 @@ namespace api.Models
         public DateTime PublicationDate { get; set; }
         public string Category { get; set; } = string.Empty;
         public int PageCount { get; set; }
+        public bool Availability { get; set; } = true;
     }
 }
