@@ -91,5 +91,14 @@ namespace api.Controllers
 
             return Ok(books);
         }
+
+        [HttpPost]
+        public IActionResult Create([FromBody] CreateBookDto bookDto)
+        {
+            var bookModel = bookDto.ToCreateBookDto();
+            _context.Books.Add(bookModel);
+            _context.SaveChanges();
+            return CreatedAtAction(nameof(GetById), new { id = bookModel.Id}, bookModel.ToBookDto());
+        }
     }
 }
