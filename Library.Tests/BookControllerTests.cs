@@ -30,6 +30,8 @@ namespace Library.Tests
             seeder.SeedBooks();
         }
 
+        // Get By ID Tests
+
         [Fact]
         public void GetById_BookExists_ReturnsOkResultWithBook()
         {
@@ -50,6 +52,39 @@ namespace Library.Tests
             var result = _controller.GetById(bookId);
 
             Assert.IsType<NotFoundResult>(result);
+        }
+
+        // Get Featured Books Tests
+
+        [Fact]
+        public void GetFeaturedBooks_NoFilterOrSort_ReturnsFiveRandomBooks()
+        {
+            var firstResult = _controller.GetFeaturedBooks(null, null);
+            var secondResult = _controller.GetFeaturedBooks(null, null);
+
+            var firstOkResult = Assert.IsType<OkObjectResult>(firstResult);
+            var secondOkResult = Assert.IsType<OkObjectResult>(secondResult);
+
+            var firstReturnedBooks = Assert.IsType<List<FeaturedBookDto>>(firstOkResult.Value);
+            var secondReturnedBooks = Assert.IsType<List<FeaturedBookDto>>(secondOkResult.Value);
+
+            Assert.Equal(5, firstReturnedBooks.Count);
+            Assert.Equal(5, secondReturnedBooks.Count);
+
+            bool different = false;
+            for (int i = 0; i < 5; i++)
+            {
+                if (firstReturnedBooks[i].Title != secondReturnedBooks[i].Title ||
+                    firstReturnedBooks[i].Author != secondReturnedBooks[i].Author ||
+                    firstReturnedBooks[i].Description != secondReturnedBooks[i].Description ||
+                    firstReturnedBooks[i].CoverImage != secondReturnedBooks[i].CoverImage)
+                {
+                    different = true;
+                    break;
+                }
+            }
+
+            Assert.True(different, "The two calls are the same meaning it is not random.");
         }
 
     }
