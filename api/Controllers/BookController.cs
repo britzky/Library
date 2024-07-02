@@ -42,12 +42,16 @@ namespace api.Controllers
         [HttpGet("featured")]
         public IActionResult GetFeaturedBooks([FromQuery] string? sortBy, [FromQuery] string? filterBy)
         {
-            var query = _context.Books.AsQueryable();
+            // get 20 random books from the database
+            var randomBooks = _context.Books
+                                        .OrderBy(b => Guid.NewGuid())
+                                        .Take(20)
+                                        .AsQueryable();
 
             // filter books
             if (!string.IsNullOrEmpty(filterBy))
             {
-                query = query.Where(b =>
+                randomBooks = randomBooks.Where(b =>
                     b.Title.Contains(filterBy) ||
                     b.Author.Contains(filterBy) ||
                     (filterBy.Equals("available", StringComparison.OrdinalIgnoreCase) && b.Availability)
@@ -57,21 +61,22 @@ namespace api.Controllers
             // sort books
             if (!string.IsNullOrEmpty(sortBy))
             {
-                query = sortBy.ToLower() switch
+                randomBooks = sortBy.ToLower() switch
                 {
-                    "title" => query.OrderBy(b => b.Title),
-                    "author" => query.OrderBy(b => b.Author),
-                    "availability" => query.OrderBy(b => b.Availability),
-                    _ => query
+                    "title" => randomBooks.OrderBy(b => b.Title),
+                    "author" => randomBooks.OrderBy(b => b.Author),
+                    "availability" => randomBooks.OrderBy(b => b.Availability),
+                    _ => randomBooks
                 };
             }
 
-            // get 5 random books
-            var featuredBooks = query
-                .OrderBy(b => Guid.NewGuid())
-                .Take(5)
-                .Select(b => b.ToFeaturedBookDto())
-                .ToList();
+            var featuredBooks = randomBooks.Select(b => new FeaturedBookDto
+            {
+                Title = b.Title,
+                Author = b.Author,
+                Description = b.Description,
+                CoverImage = b.CoverImage
+            }).ToList();
 
             return Ok(featuredBooks);
         }
