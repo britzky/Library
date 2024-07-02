@@ -57,7 +57,7 @@ namespace Library.Tests
         // Get Featured Books Tests
 
         [Fact]
-        public void GetFeaturedBooks_NoFilterOrSort_ReturnsFiveRandomBooks()
+        public void GetFeaturedBooks_NoFilterOrSort_ReturnsTwentyRandomBooks()
         {
             var firstResult = _controller.GetFeaturedBooks(null, null);
             var secondResult = _controller.GetFeaturedBooks(null, null);
@@ -68,11 +68,11 @@ namespace Library.Tests
             var firstReturnedBooks = Assert.IsType<List<FeaturedBookDto>>(firstOkResult.Value);
             var secondReturnedBooks = Assert.IsType<List<FeaturedBookDto>>(secondOkResult.Value);
 
-            Assert.Equal(5, firstReturnedBooks.Count);
-            Assert.Equal(5, secondReturnedBooks.Count);
+            Assert.Equal(20, firstReturnedBooks.Count);
+            Assert.Equal(20, secondReturnedBooks.Count);
 
             bool different = false;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 20; i++)
             {
                 if (firstReturnedBooks[i].Title != secondReturnedBooks[i].Title ||
                     firstReturnedBooks[i].Author != secondReturnedBooks[i].Author ||
@@ -87,5 +87,29 @@ namespace Library.Tests
             Assert.True(different, "The two calls are the same meaning it is not random.");
         }
 
+        [Fact]
+        public void GetFeaturedBooks_FilterByTitle_ReturnsFilteredBooks()
+        {
+            var filterBy = _context.Books.Select(b => b.Title).First();
+
+            var result = _controller.GetFeaturedBooks(null, filterBy);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var returnedBooks = Assert.IsType<List<FeaturedBookDto>>(okResult.Value);
+            Assert.All(returnedBooks, b => Assert.Contains(filterBy, b.Title));
+        }
+
+        [Fact]
+        public void GetFeaturedBooks_SortByTitle_ReturnsSortedBooks()
+        {
+            var sortBy = "title";
+
+            var result = _controller.GetFeaturedBooks(sortBy, null);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var returnedBooks = Assert.IsType<List<FeaturedBookDto>>(okResult.Value);
+            var sortedBooks = returnedBooks.OrderBy(b => b.Title).ToList();
+            Assert.Equal(sortedBooks, returnedBooks);
+        }
     }
 }
