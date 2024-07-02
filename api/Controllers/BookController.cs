@@ -36,7 +36,7 @@ namespace api.Controllers
             {
                 return NotFound();
             }
-            return Ok(book.ToBookDetailDto());
+            return Ok(book.ToBookDto());
         }
 
         [HttpGet("featured")]
