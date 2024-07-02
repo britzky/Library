@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dtos;
+using api.Interfaces;
 using api.Mappers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,23 +15,27 @@ namespace api.Controllers
     public class BookController : ControllerBase
     {
         private readonly AppDBContext _context;
-        public BookController(AppDBContext context)
+        private readonly IBookRepository _bookRepo;
+        public BookController(AppDBContext context, IBookRepository bookRepo)
         {
+            _bookRepo = bookRepo;
             _context = context;
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var books = _context.Books.ToList();
+            var books = await _bookRepo.GetAllAsync();
+
+            var bookDto = books.Select(s => s.ToBookDto());
 
             return Ok(books);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var book = _context.Books.Find(id);
+            var book = await _bookRepo.GetByIdAsync(id);
 
             if (book == null)
             {
@@ -40,37 +45,10 @@ namespace api.Controllers
         }
 
         [HttpGet("featured")]
-        public IActionResult GetFeaturedBooks([FromQuery] string? sortBy, [FromQuery] string? filterBy)
+        public async Task<IActionResult> GetFeaturedBooks([FromQuery] string? sortBy, [FromQuery] string? filterBy)
         {
-            // get 20 random books from the database
-            var randomBooks = _context.Books
-                                        .OrderBy(b => Guid.NewGuid())
-                                        .Take(20)
-                                        .AsQueryable();
-
-            // filter books
-            if (!string.IsNullOrEmpty(filterBy))
-            {
-                randomBooks = randomBooks.Where(b =>
-                    b.Title.Contains(filterBy) ||
-                    b.Author.Contains(filterBy) ||
-                    (filterBy.Equals("available", StringComparison.OrdinalIgnoreCase) && b.Availability)
-                );
-            }
-
-            // sort books
-            if (!string.IsNullOrEmpty(sortBy))
-            {
-                randomBooks = sortBy.ToLower() switch
-                {
-                    "title" => randomBooks.OrderBy(b => b.Title),
-                    "author" => randomBooks.OrderBy(b => b.Author),
-                    "availability" => randomBooks.OrderBy(b => b.Availability),
-                    _ => randomBooks
-                };
-            }
-
-            var featuredBooks = randomBooks.Select(b => new FeaturedBookDto
+            var featuredBooks = await _bookRepo.GetFeaturedBooksAsync(sortBy, filterBy);
+            var featuredBookDtos = featuredBooks.Select(b => new FeaturedBookDto
             {
                 Title = b.Title,
                 Author = b.Author,
@@ -82,28 +60,52 @@ namespace api.Controllers
         }
 
         [HttpGet("search")]
-        public IActionResult SearchBooks([FromQuery] string searchTerm)
+        public async Task<IActionResult> SearchBooks([FromQuery] string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 return BadRequest("Search term is required");
             }
 
-            var books = _context.Books
-                .Where(b => b.Title.Contains(searchTerm))
-                .Select(b => b.ToFeaturedBookDto())
-                .ToList();
+            var books = await _bookRepo.SearchAsync(searchTerm);
+            var featuredBookDtos = books.Select(b => b.ToFeaturedBookDto());
 
-            return Ok(books);
+            return Ok(featuredBookDtos);
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] CreateBookDto bookDto)
+        public async Task<IActionResult> Create([FromBody] CreateBookDto bookDto)
         {
             var bookModel = bookDto.ToCreateBookDto();
-            _context.Books.Add(bookModel);
-            _context.SaveChanges();
+            await _bookRepo.CreateAsync(bookModel);
             return CreatedAtAction(nameof(GetById), new { id = bookModel.Id}, bookModel.ToBookDto());
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateBookDto updateDto)
+        {
+            var bookModel = await _bookRepo.UpdateAsync(id, updateDto);
+
+            if (bookModel == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(bookModel.ToBookDto());
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            var bookModel = await _bookRepo.DeleteAsync(id);
+            if (bookModel == null)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
     }
 }
