@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Dtos;
+using api.Dtos.Transaction;
 using api.Models;
 
 namespace api.Mappers
@@ -68,6 +69,21 @@ namespace api.Mappers
                 Category = bookModel.Category,
                 PageCount = bookModel.PageCount,
                 Availability = bookModel.Availability
+            };
+        }
+
+        public static BookTransactionDto ToBookTransactionDto(this BookTransaction transaction)
+        {
+            return new BookTransactionDto
+            {
+                Id = transaction.Id,
+                BookId = transaction.BookId,
+                BookTitle = transaction.Book.Title,
+                UserId = transaction.UserId,
+                UserName = transaction.User.UserName,
+                CheckoutDate = transaction.CheckoutDate,
+                DueDate = transaction.DueDate,
+                IsReturned = transaction.IsReturned
             };
         }
 
