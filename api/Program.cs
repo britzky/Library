@@ -2,6 +2,7 @@ using api.Data;
 using api.Interfaces;
 using api.Models;
 using api.Repository;
+using api.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -84,7 +85,7 @@ builder.Services.AddAuthorization(options => {
 });
 
 builder.Services.AddScoped<IBookRepository, BookRepository>();
-
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<DataSeeder>();
 
 var app = builder.Build();
