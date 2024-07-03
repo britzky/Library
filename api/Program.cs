@@ -49,6 +49,11 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
+builder.Services.AddAuthorization(options => {
+    options.AddPolicy("LibrarianOnly", policy => policy.RequireRole("Librarian"));
+    options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
+});
+
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 
 builder.Services.AddScoped<DataSeeder>();
@@ -63,6 +68,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 //Seed the database
