@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Dtos;
+using api.Dtos.Transaction;
 using api.Models;
 
 namespace api.Interfaces
@@ -16,5 +17,6 @@ namespace api.Interfaces
        Task<Book?> DeleteAsync(int id);
        Task<List<Book>> SearchAsync(string searchTerm);
        Task<List<Book>> GetFeaturedBooksAsync(string? sortBy, string? filterBy);
+       Task UpdateAvailabilityAsync(int id, AvailabilityUpdateDto availabilityDto);
     }
 }
