@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dtos;
+using api.Dtos.Transaction;
 using api.Interfaces;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
@@ -113,6 +114,17 @@ namespace api.Repository
             _context.Books.Remove(bookModel);
             await _context.SaveChangesAsync();
             return bookModel;
+        }
+
+        public async Task UpdateAvailabilityAsync(int id, AvailabilityUpdateDto availabilityDto)
+        {
+            var book = await _context.Books.FindAsync(id);
+            if (book != null)
+            {
+                book.Availability = availabilityDto.Availability;
+                _context.Update(book);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
