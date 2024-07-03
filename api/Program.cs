@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,13 +70,14 @@ builder.Services.AddAuthentication(options => {
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["JWT:Issuers"],
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
         ValidateAudience = true,
         ValidAudience = builder.Configuration["JWT:Audience"],
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
             System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"])
-        )
+        ),
+        RoleClaimType = ClaimTypes.Role
     };
 });
 
@@ -86,6 +88,7 @@ builder.Services.AddAuthorization(options => {
 
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IBookTransactionRepository, BookTransactionRepository>();
 builder.Services.AddScoped<DataSeeder>();
 
 var app = builder.Build();
