@@ -30,10 +30,14 @@ namespace api.Service
             {
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.GivenName, user.UserName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
 
             var userRoles = await _userManager.GetRolesAsync(user);
-            claims.Add(new Claim(ClaimTypes.Role, userRoles[0]));
+            foreach (var role in userRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
 
