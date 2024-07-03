@@ -6,12 +6,14 @@ using api.Data;
 using api.Dtos;
 using api.Interfaces;
 using api.Mappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
 {
     [Route("api/book")]
     [ApiController]
+    [Authorize]
     public class BookController : ControllerBase
     {
         private readonly AppDBContext _context;
@@ -74,6 +76,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Librarian")]
         public async Task<IActionResult> Create([FromBody] CreateBookDto bookDto)
         {
             var bookModel = bookDto.ToCreateBookDto();
@@ -83,6 +86,7 @@ namespace api.Controllers
 
         [HttpPut]
         [Route("{id}")]
+        [Authorize(Roles = "Librarian")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateBookDto updateDto)
         {
             var bookModel = await _bookRepo.UpdateAsync(id, updateDto);
@@ -97,6 +101,7 @@ namespace api.Controllers
 
         [HttpDelete]
         [Route("{id}")]
+        [Authorize(Roles = "Librarian")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var bookModel = await _bookRepo.DeleteAsync(id);
