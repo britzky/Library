@@ -18,6 +18,7 @@ namespace api.Data
         }
 
         public DbSet<Book> Books { get; set; }
+        public DbSet<BookTransaction> BookTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
