@@ -13,7 +13,9 @@
     "@heroicons/react": "^2.1.4",
     "next": "14.2.4",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "yup": "^1.4.0",
+    "yup-password": "^0.4.0"
   },
   "devDependencies": {
     "@types/node": "^20",
