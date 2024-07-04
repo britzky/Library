@@ -16,7 +16,7 @@ namespace api.Controllers
 {
     [Route("api/transaction")]
     [ApiController]
-    // [Authorize]
+    [Authorize]
     public class BookTransactionController : ControllerBase
     {
         private readonly IBookTransactionRepository _bookTransactionRepository;
