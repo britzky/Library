@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using api.Dtos.Transaction;
 using api.Interfaces;
+using api.Mappers;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -98,6 +100,22 @@ namespace api.Controllers
             await _bookTransactionRepository.UpdateTransactionAsync(transaction);
 
             return Ok();
+        }
+
+        [HttpGet("checked-out-books")]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> GetCheckedOutBooks()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var transactions = await _bookTransactionRepository.GetCustomerCheckedOutBooksAsync(userId);
+            var checkedOutBooks = transactions.Select(t => t.ToCheckedOutBookDto()).ToList();
+
+            return Ok(checkedOutBooks);
         }
     }
 }
