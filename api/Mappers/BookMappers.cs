@@ -31,10 +31,12 @@ namespace api.Mappers
         {
             return new FeaturedBookDto
             {
+                Id = bookModel.Id,
                 Title = bookModel.Title,
                 Author = bookModel.Author,
                 Description = bookModel.Description,
-                CoverImage = bookModel.CoverImage
+                CoverImage = bookModel.CoverImage,
+                Availability = bookModel.Availability
             };
         }
 
