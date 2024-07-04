@@ -87,5 +87,18 @@ namespace api.Mappers
             };
         }
 
+        public static CheckedOutBookDto ToCheckedOutBookDto(this BookTransaction transaction)
+        {
+            return new CheckedOutBookDto
+            {
+                TransactionId = transaction.Id,
+                Title = transaction.Book.Title,
+                Author = transaction.Book.Author,
+                Description = transaction.Book.Description,
+                CoverImage = transaction.Book.CoverImage,
+                DueDate = transaction.DueDate
+            };
+        }
+
     }
 }
