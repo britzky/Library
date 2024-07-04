@@ -16,13 +16,21 @@ namespace api.Repository
         {
             _context = context;
         }
-        public async Task<List<BookTransaction>> GetReturnedBooksAsync()
+
+        public async Task<List<BookTransaction>> GetBooksPendingCirculationAsync()
         {
             return await _context.BookTransactions
-                .Include(bt => bt.Book)
-                .Include(bt => bt.User)
-                .Where(bt => bt.IsReturned == true)
-                .ToListAsync();
+                                .Include(bt => bt.Book)
+                                .Where(bt => bt.IsReturned && !bt.Book.Availability)
+                                .ToListAsync();
+        }
+
+        public async Task<List<BookTransaction>> GetCustomerCheckedOutBooksAsync(string userId)
+        {
+            return await _context.BookTransactions
+                                .Include(bt => bt.Book)
+                                .Where(bt => bt.UserId == userId && !bt.IsReturned)
+                                .ToListAsync();
         }
 
         public async Task<BookTransaction?> GetTransactionByIdAsync(int transactionId)
