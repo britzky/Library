@@ -60,5 +60,44 @@ namespace api.Controllers
             return Ok();
 
         }
+
+        [HttpPost("customer-return/{transactionId}")]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> ReturnToLibrary(int transactionId)
+        {
+            var transaction = await _bookTransactionRepository.GetTransactionByIdAsync(transactionId);
+            if (transaction == null || transaction.IsReturned)
+            {
+                return BadRequest("Invalid transaction or book already returned.");
+            }
+
+            transaction.IsReturned = true;
+            await _bookTransactionRepository.UpdateTransactionAsync(transaction);
+
+           return Ok();
+        }
+
+        [HttpPost("librarian-return/{transactionId}")]
+        [Authorize(Roles = "Librarian")]
+        public async Task<IActionResult> ReturnToCirculation(int transactionId)
+        {
+            var transaction = await _bookTransactionRepository.GetTransactionByIdAsync(transactionId);
+            if (transaction == null || !transaction.IsReturned)
+            {
+                return BadRequest("Invalud transaction or book not ready for return");
+            }
+
+            var book = await _bookRepository.GetByIdAsync(transaction.BookId);
+            if (book == null)
+            {
+                return BadRequest("Book not found.");
+            }
+
+            var availabilityDto = new AvailabilityUpdateDto { Availability = true };
+            await _bookRepository.UpdateAvailabilityAsync(book.Id, availabilityDto);
+            await _bookTransactionRepository.UpdateTransactionAsync(transaction);
+
+            return Ok();
+        }
     }
 }
