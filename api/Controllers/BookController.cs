@@ -50,13 +50,7 @@ namespace api.Controllers
         public async Task<IActionResult> GetFeaturedBooks([FromQuery] string? sortBy, [FromQuery] string? filterBy)
         {
             var featuredBooks = await _bookRepo.GetFeaturedBooksAsync(sortBy, filterBy);
-            var featuredBookDtos = featuredBooks.Select(b => new FeaturedBookDto
-            {
-                Title = b.Title,
-                Author = b.Author,
-                Description = b.Description,
-                CoverImage = b.CoverImage
-            }).ToList();
+            var featuredBookDtos = featuredBooks.Select(b => b.ToFeaturedBookDto()).ToList();
 
             return Ok(featuredBooks);
         }
