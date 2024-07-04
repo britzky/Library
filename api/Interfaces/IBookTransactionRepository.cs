@@ -8,7 +8,8 @@ namespace api.Interfaces
 {
     public interface IBookTransactionRepository
     {
-        Task<List<BookTransaction>> GetReturnedBooksAsync();
+        Task <List<BookTransaction>> GetCustomerCheckedOutBooksAsync(string userId);
+        Task <List<BookTransaction>> GetBooksPendingCirculationAsync();
         Task UpdateTransactionAsync(BookTransaction transaction);
         Task<BookTransaction?> GetTransactionByIdAsync(int transactionId);
     }
