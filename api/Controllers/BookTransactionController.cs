@@ -117,5 +117,14 @@ namespace api.Controllers
 
             return Ok(checkedOutBooks);
         }
+
+        [HttpGet("books-to-return")]
+        [Authorize(Roles = "Librarian")]
+        public async Task<IActionResult> GetBooksToReturn()
+        {
+            var transactions = await _bookTransactionRepository.GetBooksPendingCirculationAsync();
+            var booksToReturn = transactions.Select(transaction => transaction.ToCheckedOutBookDto()).ToList();
+            return Ok(booksToReturn);
+        }
     }
 }
