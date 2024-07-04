@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation';
+import RoleSelector from '../components/RoleSelector';
 
 interface AuthResponse {
     token: string;
@@ -106,16 +107,7 @@ export default function Auth() {
           </div>
           {!isLogin && (
             <div className="mb-6">
-              <select
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={role}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRole(e.target.value)}
-                required
-              >
-                <option value="">Select a role</option>
-                <option value="User">User</option>
-                <option value="Admin">Admin</option>
-              </select>
+             <RoleSelector role={role} setRole={setRole} />
             </div>
           )}
           <div className="flex items-center justify-between">
