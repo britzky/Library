@@ -3,6 +3,29 @@
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation';
 import RoleSelector from '../components/RoleSelector';
+import * as yup from 'yup';
+import YupPassword from 'yup-password';
+YupPassword(yup)
+
+const registerSchema = yup.object({
+    username: yup.string().required("Username is required"),
+    email: yup.string().email("Please enter a valid email").required("Email is required"),
+    password: yup.string().password()
+        .minSymbols(1, "Password must include at least one special character")
+        .minUppercase(1, "Password must include at least one uppercase letter")
+        .minLowercase(1, "Password must include at least one lowercase letter")
+        .minNumbers(1, "Password must include at least one lowercase letter")
+        .min(12, "Password must be at least 12 characters long")
+        .required("Password is required"),
+    role: yup.string().required("Please select a role")
+});
+
+const loginSchema = yup.object({
+    username: yup.string().required("Username is required"),
+    password: yup.string().required("Password is required"),
+});
+
+const validationSchema = (isLogin: boolean) => isLogin ? loginSchema : registerSchema;
 
 interface AuthResponse {
     token: string;
@@ -25,37 +48,40 @@ export default function Auth() {
         e.preventDefault();
         setError("");
 
-        if (!isLogin && !role) {
-            setError("Please select a role");
-            return;
+        const formData = {
+            username,
+            email: isLogin ? undefined : email,
+            password,
+            role: isLogin ? undefined : role,
         }
 
-        const url = isLogin ? '/api/account/login' : 'api/account/register';
-        const body = isLogin
-            ? JSON.stringify({ username, password })
-            : JSON.stringify({ username, email, password, role});
-
         try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: body
-            });
+            await validationSchema(isLogin).validate(formData, { abortEarly: false });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'An error occurred');
-            }
+            const url = isLogin ? 'http://localhost:5156/api/account/login' : 'http://localhost:5156/api/account/register';
+            const body = isLogin
+                ? JSON.stringify({ username, password })
+                : JSON.stringify({ username, email, password, role});
 
-            const data: AuthResponse = await response.json();
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body
+                });
 
-            if (isLogin) {
-                localStorage.setItem('token', data.token);
-                router.push('/dashboard');
-            } else {
-                setError('Registration successful. Please log in.');
-                setIsLogin(true);
-            }
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'An error occurred');
+                }
+
+                const data: AuthResponse = await response.json();
+
+                if (isLogin) {
+                    localStorage.setItem('token', data.token);
+                } else {
+                    setError('Registration successful. Please log in.');
+                    setIsLogin(true);
+                }
         } catch (error) {
             if (error instanceof Error){
                 setError(error.message);
