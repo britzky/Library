@@ -6,51 +6,18 @@ import BookList from '../components/BookList';
 import SearchBar from '../components/SearchBar';
 import FilterOptions from '../components/FilterOptions';
 import { withAuth } from '../utils/withAuth';
+import { useFeaturedBooks, Book, Filter } from '../hooks/useFeaturedBooks';
 
-interface Book {
-    id: number;
-    title: string;
-    author: string;
-    description: string;
-    coverImage: string;
-    availability: boolean;
-}
 
 const Dashboard: React.FC = () => {
     const { user } = useAuth();
-    const [books, setBooks] = useState<Book[]>([]);
     const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filter, setFilter] = useState({
+    const [searchTerm, setSearchTerm] = useState<string>('');
+
+    const { books, isLoading, error, setFilter, refetch } = useFeaturedBooks({
         sortBy: '',
         filterBy: ''
     });
-
-    useEffect(() => {
-        fetchFeaturedBooks();
-    }, [filter]);
-
-    const fetchFeaturedBooks = async () => {
-        try {
-            const queryParams = new URLSearchParams({
-                sortBy: filter.sortBy,
-                filterBy: filter.filterBy
-            }).toString();
-            const response = await fetch(`http://localhost:5156/api/book/featured?${queryParams}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch books');
-            }
-            const data = await response.json();
-            setBooks(data);
-            setFilteredBooks(data);
-        } catch (error) {
-            console.error('Error fetching books:', error);
-        }
-    }
 
     const handleSearch = async (term: string) => {
         setSearchTerm(term);
@@ -74,6 +41,10 @@ const Dashboard: React.FC = () => {
         }
     };
 
+    const handleFilterChange = (newFilter: Filter): void => {
+        setFilter(newFilter);
+    };
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold mb-8">Welcome, {user?.userName}</h1>
@@ -82,10 +53,16 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="flex flex-col md:flex-row gap-8">
                 <div className="w-full md:w-1/4">
-                    <FilterOptions filter={filter} onFilterChange={setFilter} />
+                    <FilterOptions filter={{sortBy: '', filterBy: '' }} onFilterChange={handleFilterChange} />
                 </div>
                 <div className="w-full md:w-3/4">
-                    <BookList books={filteredBooks} />
+                    {isLoading ? (
+                        <p>Loading books...</p>
+                    ) : error ? (
+                        <p className="text-red-500">{error}</p>
+                    ) : (
+                        <BookList books={searchTerm ? filteredBooks : books} onBookUpdate={refetch} />
+                    )}
                 </div>
             </div>
         </div>
