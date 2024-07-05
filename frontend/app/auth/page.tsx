@@ -1,8 +1,8 @@
 'use client';
 
 import { FormEvent, useState } from 'react'
-import { useRouter } from 'next/navigation';
 import RoleSelector from '../components/RoleSelector';
+import { useAuth } from '../contexts/AuthContext';
 import * as yup from 'yup';
 import YupPassword from 'yup-password';
 YupPassword(yup)
@@ -42,46 +42,29 @@ export default function Auth() {
     const [role, setRole] = useState<string>("");
     const [error, setError] = useState<string>("");
 
-    const router = useRouter();
+    const { login, register } = useAuth();
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
 
-        const formData = {
-            username,
-            email: isLogin ? undefined : email,
-            password,
-            role: isLogin ? undefined : role,
-        }
-
         try {
+          const formData = {
+              username,
+              email,
+              password,
+              role
+          };
+
             await validationSchema(isLogin).validate(formData, { abortEarly: false });
 
-            const url = isLogin ? 'http://localhost:5156/api/account/login' : 'http://localhost:5156/api/account/register';
-            const body = isLogin
-                ? JSON.stringify({ username, password })
-                : JSON.stringify({ username, email, password, role});
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: body
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'An error occurred');
-                }
-
-                const data: AuthResponse = await response.json();
-
-                if (isLogin) {
-                    localStorage.setItem('token', data.token);
-                } else {
-                    setError('Registration successful. Please log in.');
-                    setIsLogin(true);
-                }
+            if (isLogin) {
+              await login(username, password);
+            } else {
+              await register(username, email, password, role);
+              setError('Registration successful. Please log in.');
+              setIsLogin(true);
+            }
         } catch (error) {
             if (error instanceof Error){
                 setError(error.message);
