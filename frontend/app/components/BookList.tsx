@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import BookDetailModal from './BookDetailModal';
+import { useAuth } from '../contexts/AuthContext';
+import { useCheckoutBook } from '../hooks/useCheckoutBook';
 
 interface Book {
     id: number;
@@ -23,11 +25,15 @@ interface BookDetail extends Book {
 
 interface BookListProps {
     books: Book[];
+    onBookUpdate: () => void;
 }
 
-const BookList: React.FC<BookListProps> = ({ books }) => {
+const BookList: React.FC<BookListProps> = ({ books, onBookUpdate }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState<BookDetail | null>(null);
+
+    const { user } = useAuth();
+    const { checkoutBook, isLoading, error } = useCheckoutBook();
 
     const fetchBookDetails = async (bookId: number) => {
         const response = await fetch(`http://localhost:5156/api/book/${bookId}`, {
@@ -43,6 +49,15 @@ const BookList: React.FC<BookListProps> = ({ books }) => {
         setSelectedBook(data);
         setIsModalOpen(true);
     };
+
+    const handleCheckout = async (bookId: number) => {
+        try {
+            await checkoutBook(bookId);
+            onBookUpdate();
+        } catch (error) {
+            console.error('Checkout failed:', error);
+        }
+    }
 
 
     return (
@@ -68,6 +83,15 @@ const BookList: React.FC<BookListProps> = ({ books }) => {
                             <button onClick={() => fetchBookDetails(book.id)} className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 Details
                             </button>
+                            {user && user.role === 'Customer' && (
+                                <button
+                                    onClick={() => handleCheckout(book.id)}
+                                    className={`px-3 py-1 ml-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 ${!book.availability && 'opacity-50 cursor-not-allowed'}`}
+                                    disabled={!book.availability || isLoading}
+                                >
+                                    {isLoading ? 'Processing...' : 'Checkout'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
