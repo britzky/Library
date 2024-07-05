@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
+import BookDetailModal from './BookDetailModal';
 
 interface Book {
     id: number;
@@ -12,11 +13,38 @@ interface Book {
     availability: boolean;
 }
 
+interface BookDetail extends Book {
+    isbn: number;
+    publisher: string;
+    publicationDate: string;
+    category: string;
+    pageCount: number;
+}
+
 interface BookListProps {
     books: Book[];
 }
 
 const BookList: React.FC<BookListProps> = ({ books }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedBook, setSelectedBook] = useState<BookDetail | null>(null);
+
+    const fetchBookDetails = async (bookId: number) => {
+        const response = await fetch(`http://localhost:5156/api/book/${bookId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            }
+        });
+        if (!response.ok) {
+            console.error('Failed to fetch book details');
+            return;
+        }
+        const data: BookDetail = await response.json();
+        setSelectedBook(data);
+        setIsModalOpen(true);
+    };
+
+
     return (
         <div className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
             {books.map((book) => (
@@ -37,13 +65,20 @@ const BookList: React.FC<BookListProps> = ({ books }) => {
                             <span className={`px-2 py-1 rounded-full text-xs font-semi-bold ${book.availability ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                               {book.availability ? 'Available' : 'Unavailable'}
                             </span>
-                            <button className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button onClick={() => fetchBookDetails(book.id)} className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 Details
                             </button>
                         </div>
                     </div>
                 </div>
             ))}
+            {selectedBook && (
+                <BookDetailModal
+                    bookDetail={selectedBook}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                />
+            )}
         </div>
     )
 }
