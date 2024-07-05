@@ -56,7 +56,7 @@ const Dashboard: React.FC = () => {
         setSearchTerm(term);
         if (term) {
             try {
-                const response = await fetch(`/api/book/search?searchTerm=${term}`, {
+                const response = await fetch(`http://localhost:5156/api/book/search?searchTerm=${term}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
