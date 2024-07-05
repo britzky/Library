@@ -22,12 +22,12 @@ const FilterOptions: React.FC<FilterOptionsProps> = ({ filter, onFilterChange })
             <label htmlFor="author" className="block text-sm font-medium text-gray-700">
                 Filter By
             </label>
-            <div className="space-y-2">
+            <div className="space-y-2 space-x-7">
             {filterOptions.map((option) => (
                 <button
                     key={option}
                     onClick={() => onFilterChange({ ...filter, filterBy: option === 'All' ? '' : option.toLowerCase() })}
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    className={` min-w-[100px] px-3 py-2 rounded-md text-sm font-medium ${
                         filter.filterBy === (option === 'All' ? '' : option.toLowerCase())
                             ? 'bg-blue-500 text-white'
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
