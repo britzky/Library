@@ -94,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const logout = () => {
+        router.push("/");
         localStorage.removeItem('token');
         setUser(null);
     };
