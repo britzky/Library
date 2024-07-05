@@ -9,7 +9,7 @@ export const Navbar = () => {
     <div className="w-full">
         <nav className="container relative flex flex-wrap items-center justify-between p-8 mx-auto lg:justify-between xl:px-0">
             <div className="flex flex-wrap items-center justify-between w-full lg:w-auto">
-                <Link href="/">
+                <Link href={user ? "/dashboard" : "/"}>
                     <span className="flex items-center space-x-2 text-2xl font-medium text-indigo-500">
                     <span>
                         <Image
